@@ -24,7 +24,7 @@ class ImageModel(nn.Module):
 
 class TextModel(nn.Module):
     def __init__(self, num_classes, text_model = 'bert_kykim'):
-        super(ImageModel, self).__init__()
+        super(TextModel, self).__init__()
 
         if text_model == 'bert_kykim':
             self.text_model = BertModel.from_pretrained('kykim/bert-kor-base')

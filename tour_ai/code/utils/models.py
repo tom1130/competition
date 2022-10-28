@@ -61,16 +61,18 @@ class MultiModalModel(nn.Module):
         elif text_model == 'bert_klue':
             self.text_model = AutoModel.from_pretrained("klue/roberta-small")
             self.dropout = nn.Dropout(0.3)
-        
-        self.linear = nn.Linear(256+768, num_classes)
+        self.text_linear = nn.Linear(768, 256)
+        self.linear = nn.Linear(256+256, num_classes)
         self.softmax = nn.Softmax()
 
     def forward(self, image, text, text_mask):
         # image
         image_output = self.image_model(image)
-
+        image_output = self.dropout(image_output)
         # text
         _, text_output = self.text_model(text, attention_mask=text_mask, return_dict=False)
+        text_output = self.dropout(text_output)
+        text_output = self.text_linear(text_output)
         text_output = self.dropout(text_output)
 
         # concat

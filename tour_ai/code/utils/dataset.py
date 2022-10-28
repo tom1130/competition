@@ -51,9 +51,35 @@ class TextDataset(Dataset):
     def __len__(self):
         return len(self.sentences)
 
-# class MultiModalDataset(Dataset):
-#     def __init__(self, data, transforms, base_dir, infer_yn=False):
-#         super(MultiModalDataset, self).__init__()
+class MultiModalDataset(Dataset):
+    def __init__(self, data, transforms, base_dir, infer_yn=False):
+        super(MultiModalDataset, self).__init__()
+        self.infer_yn = infer_yn
+        # label
+        if not infer_yn:
+            self.labels = data['label'].values
+        # image
+        self.img_paths = data['img_path'].apply(lambda x: x[1:]).values
+        self.transforms = transforms
+        self.base_dir = base_dir
+        # text 
+        self.sentences = data['sentence'].values
 
-#     def forward(self):
-#         return output
+    def __getitem__(self, index):
+        # get image
+        img_path = self.img_paths[index]
+        img_path = self.base_dir+img_path
+        image = cv2.imread(img_path)
+        if self.transforms is not None:
+            image = self.transforms(image=image)['image']
+        # get text
+        sentence = self.sentences[index]
+
+        if self.infer_yn:
+            return image, sentence
+        else:
+            label = self.labels[index]
+            return image, sentence, label
+
+    def __len__(self):
+        return len(self.sentences)
